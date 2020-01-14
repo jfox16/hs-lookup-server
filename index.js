@@ -20,10 +20,10 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Hearthstone Lookup server!');
 });
 
-app.get('/metadata', async (req, res) => {
+app.get('/:region/metadata', async (req, res) => {
   try {
     let metadata = await apiHandler.getMetadata(
-      req.query.region,
+      req.params.region,
       req.query.locale
     );
     res.json(metadata);
