@@ -21,24 +21,15 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/metadata/:something', async (req, res) => {
-  console.log("is this on?");
-  res.send(`This is the metadata page, your param is ${req.params.something}`);
-});
-
-app.get('/metadata/:region/:locale', async (req, res) => {
-  console.log(`Trying to fetch data using region ${req.params.region} and locale ${req.params.locale}...`);
+app.get('/metadata', async (req, res) => {
   try {
     let metadata = await apiHandler.getMetadata(
-      req.params.region,
-      req.params.locale
+      req.query.region,
+      req.query.locale
     );
-    res.send(metadata);
+    res.json(metadata);
   }
-  catch (error) {
-    throw new Error(error);
-  }
-  res.send("whats happneing");
+  catch (error) {console.log(error);}
 });
 
 app.listen(process.env.PORT || 3000, () => console.log(`App is listening`));

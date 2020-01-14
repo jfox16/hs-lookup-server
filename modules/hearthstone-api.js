@@ -11,16 +11,17 @@ class HearthstoneAPIHandler {
       );
       console.log('Got the access token! ' + this.accessToken);
     }
-    catch (err) {
-      console.error(err);
-    }
+    catch (error) {console.log(error)}
   }
 
   async getMetadata(region, locale) {
-    console.log("Getting metadata...");
+    console.log(`Getting metadata using region ${region} and locale ${locale}...`);
     if (!this.accessToken) {
       console.log("No accessToken, generating a new one...");
-      await this.generateAccessToken();
+      try {
+        await this.generateAccessToken()
+      }
+      catch(error) {console.error(error);}
     }
 
     const requestUrl = `https://${region}.api.blizzard.com/hearthstone/metadata?locale=${locale}&access_token=${this.accessToken}`;
@@ -28,10 +29,9 @@ class HearthstoneAPIHandler {
     const metadata = await fetch(requestUrl)
     .then((response) => response.json())
     .then((data) => this.metadata = data)
-    .catch((error) => {
-      console.error('Error:', error);
-    });
+    .catch((error) => console.error('Error:', error));
     
+    console.log("Metadata get!");
     return metadata;
   }
 
