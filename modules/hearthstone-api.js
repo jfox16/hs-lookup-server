@@ -5,6 +5,7 @@ class HearthstoneAPIHandler {
 
   async generateAccessToken() {
     try {
+      console.log(`Generating Access Token with CLIENT_ID ${process.env.CLIENT_ID} and CLIENT_SECRET ${process.env.CLIENT_SECRET}...`)
       this.accessToken = await auth.getOAuthAccessToken(
         process.env.CLIENT_ID,
         process.env.CLIENT_SECRET
@@ -26,12 +27,15 @@ class HearthstoneAPIHandler {
 
     const requestUrl = `https://${region}.api.blizzard.com/hearthstone/metadata?locale=${locale}&access_token=${this.accessToken}`;
     console.log("Request URL is " + requestUrl);
+
     const metadata = await fetch(requestUrl)
     .then((response) => response.json())
     .then((data) => this.metadata = data)
     .catch((error) => console.error('Error:', error));
-    
-    console.log("Metadata get!");
+
+    if (metadata) {
+      console.log("Metadata get!");
+    }
     return metadata;
   }
 
