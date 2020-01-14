@@ -17,11 +17,7 @@ app.use(
 app.options('*', cors());
 
 app.get('/', (req, res) => {
-  res.send({
-    Me: 'thinks',
-    this: 'is',
-    working: '?!'
-  });
+  res.send('Welcome to the Hearthstone Lookup server!');
 });
 
 app.get('/metadata', async (req, res) => {

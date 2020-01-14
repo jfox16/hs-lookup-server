@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const getOAuthAccessToken = async (client_id, client_secret, region='us') => {
+const requestAccessToken = async function(client_id, client_secret, region='us') {
 
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -23,4 +23,18 @@ const getOAuthAccessToken = async (client_id, client_secret, region='us') => {
   return accessToken;
 };
 
-exports.getOAuthAccessToken = getOAuthAccessToken;
+const checkAccessToken = async function(token, region='us') {
+  const tokenIsValid = await fetch(`https://${region}.battle.net/oauth/check_token?token=${token}`, {
+    method: 'POST'
+  })
+  .then((response) => response.json())
+  .then((data) => (data.error === undefined))
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+
+  return tokenIsValid;
+}
+
+exports.requestAccessToken = requestAccessToken;
+exports.checkAccessToken = checkAccessToken;

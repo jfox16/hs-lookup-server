@@ -8,40 +8,49 @@ class HearthstoneAPIHandler {
     this.client_secret = client_secret;
   }
 
-  async generateAccessToken() {
+  async generateOrRefreshAccessToken() {
+    if (this.accessToken) {
+      try {
+        let tokenIsValid = await auth.checkAccessToken(this.accessToken);
+        console.log((tokenIsValid) ? "Token is still valid." : "Token is no longer valid.");
+        if (tokenIsValid) return;
+      }
+      catch (error) {
+        console.error(error);
+      }
+    }
+    // Access token does not exist or is no longer valid, so generate a new one.
+    console.log(`Requesting a new token... (client_id: ${this.client_id} and client_secret: ${this.client_secret})`);
     try {
-      console.log(`Generating Access Token with client_id ${this.client_id} and client_secret ${this.client_secret}...`)
-      this.accessToken = await auth.getOAuthAccessToken(
+      this.accessToken = await auth.requestAccessToken(
         this.client_id,
         this.client_secret
       );
-      console.log('Got the access token! ' + this.accessToken);
+      console.log('Got the access token: ' + this.accessToken);
     }
-    catch (error) {console.log(error)}
+    catch (error) {
+      console.error(error);
+    }
   }
 
   async getMetadata(region, locale) {
     console.log(`Getting metadata using region ${region} and locale ${locale}...`);
-    if (!this.accessToken) {
-      console.log("No accessToken, generating a new one...");
-      try {
-        await this.generateAccessToken()
+
+    try {
+      await this.generateOrRefreshAccessToken(); // Make sure token is valid
+      const requestUrl = `https://${region}.api.blizzard.com/hearthstone/metadata?locale=${locale}&access_token=${this.accessToken}`;
+      console.log("Metadata request URL: " + requestUrl);
+      const metadata = await fetch(requestUrl)
+      .then((response) => response.json());
+  
+      if (metadata) {
+        console.log("Metadata get!");
       }
-      catch(error) {console.error(error);}
+      return metadata;
     }
-
-    const requestUrl = `https://${region}.api.blizzard.com/hearthstone/metadata?locale=${locale}&access_token=${this.accessToken}`;
-    console.log("Request URL is " + requestUrl);
-
-    const metadata = await fetch(requestUrl)
-    .then((response) => response.json())
-    .then((data) => this.metadata = data)
-    .catch((error) => console.error('Error:', error));
-
-    if (metadata) {
-      console.log("Metadata get!");
+    catch(error) {
+      console.error(error);
     }
-    return metadata;
   }
 
   async fetchCardData() {
