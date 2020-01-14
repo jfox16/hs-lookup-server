@@ -1,0 +1,14 @@
+{
+  "name": "hslookup-server",
+  "version": "1.0.0",
+  "description": "Serves an API that is connected to Blizzard's Hearthstone API for looking up card data.",
+  "main": "index.js",
+  "repository": "https://hslookup.herokuapp.com",
+  "author": "Jonathan Paul Fox",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  }
+}
