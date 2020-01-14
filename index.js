@@ -3,7 +3,10 @@ const express = require('express');
 const app = express();
 var cors = require('cors');
 var api = require('./modules/hearthstone-api');
-var apiHandler = new api.HearthstoneAPIHandler();
+var apiHandler = new api.HearthstoneAPIHandler(
+  process.env.CLIENT_ID,
+  process.env.CLIENT_SECRET
+);
 
 app.use(
   cors({

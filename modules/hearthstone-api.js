@@ -3,12 +3,17 @@ var auth = require('./bnet-authentication');
 
 class HearthstoneAPIHandler {
 
+  constructor(client_id, client_secret) {
+    this.client_id = client_id;
+    this.client_secret = client_secret;
+  }
+
   async generateAccessToken() {
     try {
-      console.log(`Generating Access Token with CLIENT_ID ${process.env.CLIENT_ID} and CLIENT_SECRET ${process.env.CLIENT_SECRET}...`)
+      console.log(`Generating Access Token with client_id ${this.client_id} and client_secret ${this.client_secret}...`)
       this.accessToken = await auth.getOAuthAccessToken(
-        process.env.CLIENT_ID,
-        process.env.CLIENT_SECRET
+        this.client_id,
+        this.client_secret
       );
       console.log('Got the access token! ' + this.accessToken);
     }
