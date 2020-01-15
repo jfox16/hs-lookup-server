@@ -20,15 +20,30 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Hearthstone Lookup server!');
 });
 
-app.get('/:region/metadata', async (req, res) => {
+app.get('/metadata', async (req, res) => {
   try {
     let metadata = await apiHandler.getMetadata(
-      req.params.region,
+      req.query.region,
       req.query.locale
     );
     res.json(metadata);
   }
-  catch (error) {console.log(error);}
+  catch (error) {
+    console.log(error);
+  }
+});
+
+app.get('/cards', async (req, res) => {
+  try {
+    let cards = await apiHandler.getCards(
+      req.query.region,
+      req.query.locale
+    );
+    res.json(cards);
+  }
+  catch (error) {
+    console.log(error);
+  }
 });
 
 app.listen(process.env.PORT || 3000, () => console.log(`App is listening`));

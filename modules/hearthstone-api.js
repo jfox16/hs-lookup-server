@@ -8,7 +8,8 @@ class HearthstoneAPIHandler {
     this.client_secret = client_secret;
   }
 
-  async generateOrRefreshAccessToken() {
+  async refreshAccessToken() {
+    // Check if access token exists AND is still valid.
     if (this.accessToken) {
       try {
         let tokenIsValid = await auth.checkAccessToken(this.accessToken);
@@ -19,7 +20,8 @@ class HearthstoneAPIHandler {
         console.error(error);
       }
     }
-    // Access token does not exist or is no longer valid, so generate a new one.
+    // At this point, access token does not exist or is no longer valid.
+    // So request a new one!
     console.log(`Requesting a new token... (client_id: ${this.client_id} and client_secret: ${this.client_secret})`);
     try {
       this.accessToken = await auth.requestAccessToken(
@@ -37,7 +39,7 @@ class HearthstoneAPIHandler {
     console.log(`Getting metadata using region ${region} and locale ${locale}...`);
 
     try {
-      await this.generateOrRefreshAccessToken(); // Make sure token is valid
+      await this.refreshAccessToken(); // Make sure token is valid
       const requestUrl = `https://${region}.api.blizzard.com/hearthstone/metadata?locale=${locale}&access_token=${this.accessToken}`;
       console.log("Metadata request URL: " + requestUrl);
       const metadata = await fetch(requestUrl)
