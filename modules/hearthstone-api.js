@@ -1,13 +1,27 @@
 const fetch = require('node-fetch');
-var auth = require('./bnet-authentication');
+const _ = require('lodash');
+const auth = require('./bnet-authentication');
+const showRequestURLs = true;
 
 class HearthstoneAPIHandler {
 
   constructor(client_id, client_secret) {
     this.client_id = client_id;
     this.client_secret = client_secret;
+
+    this.regionBaseURLs = {
+      'us': 'https://us.api.blizzard.com/',
+      'eu': 'https://eu.api.blizzard.com/',
+      'kr': 'https://kr.api.blizzard.com/',
+      'tw': 'https://tw.api.blizzard.com/',
+      'cn': 'https://gateway.battlenet.com.cn/'
+    }
+
+    this.cache = {};
   }
 
+  // refreshAccessToken checks the current access token. If it does not exist or is no longer valid,
+  // a new access token is requested. The access token is stored in this.accessToken
   async refreshAccessToken() {
     // Check if access token exists AND is still valid.
     if (this.accessToken) {
@@ -35,31 +49,118 @@ class HearthstoneAPIHandler {
     }
   }
 
-  async getMetadata(region, locale) {
-    console.log(`Getting metadata using region ${region} and locale ${locale}...`);
+  
+  async fetchMetadata(region, query) {
+
+    // Use en_US as default locale
+    let locale = (query.locale) ? query.locale : 'en_US';
+
+    // If this data has been previously requested, return the cached data instead.
+    let cacheKey = `${region}/metadata?&locale=${locale}`;
+    if (this.cache[cacheKey]) {
+      console.log(`Served cached metadata!! (cache[${cacheKey}])`);
+      return this.cache[cacheKey];
+    }
 
     try {
-      await this.refreshAccessToken(); // Make sure token is valid
-      const requestUrl = `https://${region}.api.blizzard.com/hearthstone/metadata?locale=${locale}&access_token=${this.accessToken}`;
-      console.log("Metadata request URL: " + requestUrl);
-      const metadata = await fetch(requestUrl)
+      // Make sure access Token is valid
+      await this.refreshAccessToken();
+    }
+    catch (error) {
+      console.error(error);
+      return;
+    }
+
+    const requestUrl = `${this.regionBaseURLs[region]}hearthstone/metadata?locale=${locale}&access_token=${this.accessToken}`;
+    if (showRequestURLs) console.log("Requesting metadata with URL: " + requestUrl);
+
+    let metadata;
+    try {
+      metadata = await fetch(requestUrl)
       .then((response) => response.json());
-  
-      if (metadata) {
-        console.log("Metadata get!");
-      }
-      return metadata;
     }
     catch(error) {
       console.error(error);
+      return;
     }
+
+    console.log("Served metadata!!");
+    this.cache[cacheKey] = metadata;
+    return metadata;
   }
 
-  async fetchCardData() {
-    if (!this.accessToken) {
-      console.error('Error: no access token was generated.');
+  async fetchCards(region, query) {
+
+    // use en_US as default locale
+    if (!query['locale']) {
+      query['locale'] = 'en_US';
     }
+    // use wild as default set
+    if (!query['set']) {
+      query['set'] = 'wild';
+    }
+
+    // Build a queryString to use in the request URL.
+    let queryString = '';
+    let firstEntry = true;
+    Object.keys(query).forEach((key) => {
+      (firstEntry) ? firstEntry = false : queryString += '&';
+      queryString += `${key}=${query[key]}`;
+    });
+
+    // If this data has been previously requested, return the cached data instead.
+    let cacheKey = `${region}/cards?${queryString}`;
+    if (this.cache[cacheKey]) {
+      console.log(`Served cached cards!! (cache[${cacheKey}])`);
+      return this.cache[cacheKey];
+    }
+
+    try {
+      // Make sure access Token is valid
+      await this.refreshAccessToken();
+    }
+    catch (error) {
+      console.error(error);
+      return;
+    }
+
+    const cards = [];
+    const pageSize = 1000;
+    let page = 1;
+    let pageCount = 1;
+
+    // fetch each page of cards from the Hearthstone API and add them to cards
+    while (page <= pageCount) {
+      const requestUrl = `${this.regionBaseURLs[region]}hearthstone/cards?${queryString}&pageSize=${pageSize}&page=${page}&access_token=${this.accessToken}`;
+      if (showRequestURLs) console.log("Requesting cardData with URL: " + requestUrl);
+
+      let cardDataPage;
+      try {
+        cardDataPage = await fetch(requestUrl)
+        .then((response) => response.json());
+      }
+      catch (error) {
+        console.error(error);
+        return;
+      }
+
+      // Add cards from this page to our list of cards, 
+      // only keeping the properties that we need from each card. 
+      const keysToKeep = ['cardTypeId', 'image', 'manaCost', 'name', 'text'];
+      cardDataPage.cards.map((card) => {
+        cards.push(_.pick(card, keysToKeep));
+      });
+
+      pageCount = cardDataPage.pageCount;
+      page++;
+    }
+
+    console.log("Served cards!!");
+    this.cache[cacheKey] = cards;
+    return cards;
   }
 }
+
+
 
 exports.HearthstoneAPIHandler = HearthstoneAPIHandler;
