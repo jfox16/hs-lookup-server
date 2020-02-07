@@ -37,10 +37,10 @@ app.get('/:region/metadata', async (req, res) => {
 });
 
 // For fetching cards
-app.get('/:region/cards', async (req, res) => {
+app.get('/:region/allcards', async (req, res) => {
   let t0 = now();
   try {
-    let cards = await apiHandler.fetchCardData(req.params.region, req.query);
+    let cards = await apiHandler.fetchAllCardData(req.params.region, req.query.locale);
     res.json(cards);
   }
   catch (error) {

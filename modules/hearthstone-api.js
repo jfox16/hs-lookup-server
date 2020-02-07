@@ -84,7 +84,7 @@ class HearthstoneAPIHandler {
       return;
     }
 
-    let reducedMetadata = _.pick(metadata, ['types', 'rarities', 'classes', 'minionTypes', 'keywords']);
+    let reducedMetadata = _.pick(metadata, ['sets', 'setGroups', 'types', 'rarities', 'classes', 'minionTypes', 'keywords']);
     reducedMetadata.classes = [];
     metadata.classes.forEach((metadataClass) => {
       reducedMetadata.classes.push(metadataClass);
@@ -95,27 +95,10 @@ class HearthstoneAPIHandler {
     return reducedMetadata;
   }
 
-  async fetchCardData(region, query) {
-
-    // use en_US as default locale
-    if (!query['locale']) {
-      query['locale'] = 'en_US';
-    }
-    // use wild as default set
-    if (!query['set']) {
-      query['set'] = 'wild';
-    }
-
-    // Build a queryString to use in the request URL.
-    let queryString = '';
-    let firstEntry = true;
-    Object.keys(query).forEach((key) => {
-      (firstEntry) ? firstEntry = false : queryString += '&';
-      queryString += `${key}=${query[key]}`;
-    });
+  async fetchAllCardData(region, locale='en_US') {
 
     // If this data has been previously requested, return the cached data instead.
-    let cacheKey = `${region}/cards?${queryString}`;
+    let cacheKey = `${region}/cards?locale=${locale}`;
     if (this.cache[cacheKey]) {
       console.log(`Served cached cardData!! (cache[${cacheKey}])`);
       return this.cache[cacheKey];
@@ -134,12 +117,13 @@ class HearthstoneAPIHandler {
     const pageSize = 1000;
     let page = 1;
     let pageCount = 1;
-    const keysToKeep = ['id', 'classId', 'cardTypeId', 'multiClassIds', 'minionTypeId', 'rarityId', 
-      'health', 'attack', 'manaCost', 'name', 'text', 'image', 'keywordIds'];
+    const keysToKeep = ['id', 'classId', 'cardTypeId', 'cardSetId', 'multiClassIds', 
+      'minionTypeId', 'rarityId', 'health', 'attack', 'manaCost', 'name', 'text', 'image', 
+      'keywordIds'];
 
     // fetch each page of cards from the Hearthstone API and add them to cards
     while (page <= pageCount) {
-      const requestUrl = `${this.regionBaseURLs[region]}hearthstone/cards?${queryString}&pageSize=${pageSize}&page=${page}&access_token=${this.accessToken}`;
+      const requestUrl = `${this.regionBaseURLs[region]}hearthstone/cards?locale=${locale}&pageSize=${pageSize}&page=${page}&access_token=${this.accessToken}`;
       if (showRequestURLs) console.log("Requesting cardData with URL: " + requestUrl);
 
       let cardDataPage;
@@ -166,7 +150,7 @@ class HearthstoneAPIHandler {
     try {
       // lackeys
       cardData.lackeyCards = [];
-      let lackeyCards = await fetch(`${this.regionBaseURLs[region]}hearthstone/cards?${queryString}&collectible=0&type=minion&keyword=evilzug&pageSize=${pageSize}&access_token=${this.accessToken}`)
+      let lackeyCards = await fetch(`${this.regionBaseURLs[region]}hearthstone/cards?locale=${locale}&collectible=0&type=minion&keyword=evilzug&pageSize=${pageSize}&access_token=${this.accessToken}`)
       .then((response) => response.json())
       .then((json) => json.cards);
       lackeyCards.map((card) => {
