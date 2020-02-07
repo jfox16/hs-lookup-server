@@ -84,12 +84,18 @@ class HearthstoneAPIHandler {
       return;
     }
 
+    let reducedMetadata = _.pick(metadata, ['types', 'rarities', 'classes', 'minionTypes', 'keywords']);
+    reducedMetadata.classes = [];
+    metadata.classes.forEach((metadataClass) => {
+      reducedMetadata.classes.push(metadataClass);
+    });
+
     console.log("Served metadata!!");
-    this.cache[cacheKey] = metadata;
-    return metadata;
+    this.cache[cacheKey] = reducedMetadata;
+    return reducedMetadata;
   }
 
-  async fetchCards(region, query) {
+  async fetchCardData(region, query) {
 
     // use en_US as default locale
     if (!query['locale']) {
@@ -111,7 +117,7 @@ class HearthstoneAPIHandler {
     // If this data has been previously requested, return the cached data instead.
     let cacheKey = `${region}/cards?${queryString}`;
     if (this.cache[cacheKey]) {
-      console.log(`Served cached cards!! (cache[${cacheKey}])`);
+      console.log(`Served cached cardData!! (cache[${cacheKey}])`);
       return this.cache[cacheKey];
     }
 
@@ -124,10 +130,12 @@ class HearthstoneAPIHandler {
       return;
     }
 
-    const cards = [];
+    const cardData={cards: []}
     const pageSize = 1000;
     let page = 1;
     let pageCount = 1;
+    const keysToKeep = ['id', 'classId', 'cardTypeId', 'multiClassIds', 'minionTypeId', 'rarityId', 
+      'health', 'attack', 'manaCost', 'name', 'text', 'image', 'keywordIds'];
 
     // fetch each page of cards from the Hearthstone API and add them to cards
     while (page <= pageCount) {
@@ -146,18 +154,33 @@ class HearthstoneAPIHandler {
 
       // Add cards from this page to our list of cards, 
       // only keeping the properties that we need from each card. 
-      const keysToKeep = ['cardTypeId', 'image', 'manaCost', 'name', 'text'];
       cardDataPage.cards.map((card) => {
-        cards.push(_.pick(card, keysToKeep));
+        cardData.cards.push(_.pick(card, keysToKeep));
       });
 
       pageCount = cardDataPage.pageCount;
       page++;
     }
 
-    console.log("Served cards!!");
-    this.cache[cacheKey] = cards;
-    return cards;
+    // Get the uncollectible cards too!
+    try {
+      // lackeys
+      cardData.lackeyCards = [];
+      let lackeyCards = await fetch(`${this.regionBaseURLs[region]}hearthstone/cards?${queryString}&collectible=0&type=minion&keyword=evilzug&pageSize=${pageSize}&access_token=${this.accessToken}`)
+      .then((response) => response.json())
+      .then((json) => json.cards);
+      lackeyCards.map((card) => {
+        cardData.lackeyCards.push(_.pick(card, keysToKeep));
+      });
+    }
+    catch (error) {
+      console.error(error);
+      return;
+    }
+
+    console.log("Served cardData!!");
+    this.cache[cacheKey] = cardData;
+    return cardData;
   }
 }
 

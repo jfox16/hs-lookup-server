@@ -19,10 +19,10 @@ app.use(
 app.options('*', cors());
 
 app.get('/', (req, res) => {
-  res.send('Welcome to the HSLookup.net server!\nY o u  s h o u l d  n o t  b e  h e r e');
+  res.send('Welcome to the HSLookup.net server!');
 });
 
-// For getting metadata
+// For fetching metadata
 app.get('/:region/metadata', async (req, res) => {
   let t0 = now();
   try {
@@ -36,18 +36,18 @@ app.get('/:region/metadata', async (req, res) => {
   console.log("Call to apiHandler.fetchMetadata took " + (t1 - t0).toFixed(3) + " ms.");
 });
 
-// For getting cards
+// For fetching cards
 app.get('/:region/cards', async (req, res) => {
   let t0 = now();
   try {
-    let cards = await apiHandler.fetchCards(req.params.region, req.query);
+    let cards = await apiHandler.fetchCardData(req.params.region, req.query);
     res.json(cards);
   }
   catch (error) {
     console.error(error);
   }
   let t1 = now();
-  console.log("Call to apiHandler.fetchCards took " + (t1 - t0).toFixed(3) + " ms.");
+  console.log("Call to apiHandler.fetchCardData took " + (t1 - t0).toFixed(3) + " ms.");
 });
 
 app.listen(process.env.PORT || 3000, () => console.log('App is listening'));
