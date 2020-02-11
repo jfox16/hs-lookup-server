@@ -123,7 +123,7 @@ class HearthstoneAPIHandler {
 
     // fetch each page of cards from the Hearthstone API and add them to cards
     while (page <= pageCount) {
-      const requestUrl = `${this.regionBaseURLs[region]}hearthstone/cards?locale=${locale}&pageSize=${pageSize}&page=${page}&access_token=${this.accessToken}`;
+      const requestUrl = `${this.regionBaseURLs[region]}hearthstone/cards?locale=${locale}&set=wild&pageSize=${pageSize}&page=${page}&access_token=${this.accessToken}`;
       if (showRequestURLs) console.log("Requesting cardData with URL: " + requestUrl);
 
       let cardDataPage;
