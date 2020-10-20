@@ -70,7 +70,25 @@ app.get('/:region/allcardspg', async (req, res) => {
 
   try {
     const data = await client.query(fetchAllCardsQuery);
-    res.json({cards: data.rows});
+    const cards = data.rows.map(card => {
+      const newCard = {};
+      newCard.attack = card.attack;
+      newCard.cardSetId = card.cardsetid;
+      newCard.cardTypeId = card.cardtypeid;
+      newCard.classId = card.classid;
+      newCard.health = card.health;
+      newCard.id = card.id;
+      newCard.image = card.image;
+      newCard.keywordIds = card.keywordids;
+      newCard.manaCost = card.manacost;
+      newCard.minionTypeId = card.miniontypeid;
+      newCard.multiClassIds = card.multiclassids;
+      newCard.name = card.name;
+      newCard.rarityId = card.rarityid;
+      newCard.text = card.text;
+      return newCard;
+    });
+    res.json({cards: cards});
     let t1 = now();
     console.log("Call to pg query took " + (t1 - t0).toFixed(3) + " ms.");
   }
