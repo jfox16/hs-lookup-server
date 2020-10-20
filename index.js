@@ -12,6 +12,7 @@ const client = new Client({
     rejectUnauthorized: false
   }
 });
+client.connect();
 
 var api = require('./modules/hearthstone-api');
 var apiHandler = new api.HearthstoneAPIHandler(
@@ -62,22 +63,19 @@ app.get('/:region/allcards', async (req, res) => {
 // For fetching cards from pg
 app.get('/:region/allcardspg', async (req, res) => {
   let t0 = now();
-  await client.connect();
-  console.log('fetching cards from pg');
+
   const fetchAllCardsQuery = `
     SELECT * FROM cards
   `;
+
   try {
     const data = await client.query(fetchAllCardsQuery);
     res.json({cards: data.rows});
+    let t1 = now();
+    console.log("Call to pg query took " + (t1 - t0).toFixed(3) + " ms.");
   }
   catch (err) {
     console.error(err);
-  }
-  finally {
-    let t1 = now();
-    client.end();
-    console.log("Call to pg query took " + (t1 - t0).toFixed(3) + " ms.");
   }
 });
 
