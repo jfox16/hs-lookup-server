@@ -83,18 +83,16 @@ function querifyCard(card) {
 
 async function initialize() {
 
-  console.log('Adding cards to table...');
-
-  const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-
   // First, get cards from Blizzard API.
   
+  console.log('Getting cards from Blizzard API...');
+
   const data = await apiHandler.fetchAllCardData('us', 'en_US');
   const cards = data.cards;
 
-  progressBar.start(data.cards.length, 0);
-
   await client.connect();
+
+  console.log('Deleting old table.');
 
   try {
     await client.query(dropTableQuery);
@@ -103,7 +101,14 @@ async function initialize() {
     console.error(err);
   }
 
+  console.log('Creating new table.');
+
   await client.query(createTableQuery);
+
+  console.log('Adding cards to table...');
+
+  const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+  progressBar.start(data.cards.length, 0);
 
   try {
     for (let i = 0; i < cards.length; i++) {
@@ -119,6 +124,8 @@ async function initialize() {
 
   client.end();
   progressBar.stop();
+
+  console.log('\nDone!');
 }
 
 initialize();

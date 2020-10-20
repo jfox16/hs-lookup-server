@@ -47,21 +47,21 @@ app.get('/:region/metadata', async (req, res) => {
 });
 
 // For fetching cards
-app.get('/:region/allcards', async (req, res) => {
-  let t0 = now();
-  try {
-    let cards = await apiHandler.fetchAllCardData(req.params.region, req.query.locale);
-    res.json(cards);
-  }
-  catch (error) {
-    console.error(error);
-  }
-  let t1 = now();
-  console.log("Call to apiHandler.fetchCardData took " + (t1 - t0).toFixed(3) + " ms.");
-});
+// app.get('/:region/allcards', async (req, res) => {
+//   let t0 = now();
+//   try {
+//     let cards = await apiHandler.fetchAllCardData(req.params.region, req.query.locale);
+//     res.json(cards);
+//   }
+//   catch (error) {
+//     console.error(error);
+//   }
+//   let t1 = now();
+//   console.log("Call to apiHandler.fetchCardData took " + (t1 - t0).toFixed(3) + " ms.");
+// });
 
 // For fetching cards from pg
-app.get('/:region/allcardspg', async (req, res) => {
+app.get('/:region/allcards', async (req, res) => {
   let t0 = now();
 
   const fetchAllCardsQuery = `
