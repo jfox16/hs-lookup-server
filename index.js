@@ -46,20 +46,6 @@ app.get('/:region/metadata', async (req, res) => {
   console.log("Call to apiHandler.fetchMetadata took " + (t1 - t0).toFixed(3) + " ms.");
 });
 
-// For fetching cards
-// app.get('/:region/allcards', async (req, res) => {
-//   let t0 = now();
-//   try {
-//     let cards = await apiHandler.fetchAllCardData(req.params.region, req.query.locale);
-//     res.json(cards);
-//   }
-//   catch (error) {
-//     console.error(error);
-//   }
-//   let t1 = now();
-//   console.log("Call to apiHandler.fetchCardData took " + (t1 - t0).toFixed(3) + " ms.");
-// });
-
 // For fetching cards from pg
 app.get('/:region/allcards', async (req, res) => {
   let t0 = now();

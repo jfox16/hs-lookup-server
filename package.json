@@ -7,6 +7,9 @@
   "author": "Jonathan Paul Fox",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "initialize": "node initialize.js"
+  },
   "dependencies": {
     "cli-progress": "^3.8.2",
     "cors": "^2.8.5",
